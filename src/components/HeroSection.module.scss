@@ -1,0 +1,117 @@
+// Import variables from main SCSS file
+@import '../../index.scss';
+
+.heroContainer {
+  background: linear-gradient(135deg, rgba($primary-color, 0.05) 0%, rgba($secondary-color, 0.05) 100%);
+  padding: 60px $spacing-lg;
+  margin-bottom: 40px;
+  border-radius: $border-radius-xxl;
+  margin: 20px;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="80" cy="40" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="40" cy="80" r="1" fill="%23ffffff" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    pointer-events: none;
+  }
+}
+
+.contentContainer {
+  position: relative;
+  z-index: 2;
+}
+
+.heroTitle {
+  font-family: $font-display !important;
+  font-size: 48px !important;
+  font-weight: 700 !important;
+  color: $text-primary !important;
+  margin-bottom: $spacing-md !important;
+  line-height: 1.2 !important;
+}
+
+.heroSubtitle {
+  font-size: 18px;
+  color: $text-secondary;
+  line-height: 1.6;
+  margin-bottom: $spacing-lg;
+  display: block;
+}
+
+.priceContainer {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  margin: $spacing-lg 0;
+}
+
+.currentPrice {
+  font-size: 36px;
+  font-weight: 700;
+  color: $primary-color;
+}
+
+.originalPrice {
+  font-size: 24px;
+  color: $text-tertiary;
+  text-decoration: line-through;
+}
+
+.discountBadge {
+  :global(.ant-badge-count) {
+    background: $accent-color;
+    color: $white;
+    font-weight: 600;
+    border-radius: 20px;
+    padding: $spacing-xs $spacing-md;
+    font-size: 14px;
+  }
+}
+
+.styledButton {
+  border-radius: $border-radius-md;
+  height: 48px;
+  padding: 0 $spacing-xl;
+  font-weight: 600;
+  font-size: 16px;
+  background: linear-gradient(135deg, $primary-color 0%, $primary-hover 100%);
+  border: none;
+  box-shadow: 0 4px 16px rgba($primary-color, 0.3);
+  
+  &:hover {
+    background: linear-gradient(135deg, $primary-hover 0%, #4aa5a5 100%);
+    @include button-hover;
+    box-shadow: $shadow-lg;
+  }
+}
+
+.productImage {
+  position: relative;
+  text-align: center;
+  
+  img {
+    max-width: 100%;
+    height: 400px;
+    object-fit: cover;
+    border-radius: $border-radius-xl;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    transition: transform $transition-normal;
+    
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+}
+
+.ratingContainer {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin: $spacing-md 0;
+}

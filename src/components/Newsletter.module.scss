@@ -1,0 +1,116 @@
+.newsletterContainer {
+  background: linear-gradient(
+    135deg,
+    rgba(112, 193, 193, 0.9) 0%,
+    rgba(90, 179, 179, 0.9) 100%
+  ),
+  url('https://images.unsplash.com/photo-1482914988630-16b155655e15?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTAwNDR8MHwxfHNlYXJjaHwxfHxsYW5kc2NhcGUlMjB0cmF2ZWwlMjBhZHZlbnR1cmUlMjBzY2VuaWN8ZW58MHwwfHx8MTc1NDkzMjUzOHww&ixlib=rb-4.1.0&q=85');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  border-radius: 24px;
+  margin: 0 24px 60px;
+  padding: 80px 40px;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(112, 193, 193, 0.1);
+    backdrop-filter: blur(2px);
+  }
+}
+
+.contentWrapper {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+.newsletterTitle {
+  font-family: 'Playfair Display', serif !important;
+  font-size: 48px !important;
+  font-weight: 700 !important;
+  color: white !important;
+  margin-bottom: 16px !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  line-height: 1.2 !important;
+}
+
+.newsletterSubtitle {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1.6;
+  display: block;
+  margin-bottom: 40px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.emailForm {
+  max-width: 500px;
+  margin: 0 auto;
+  display: flex;
+  gap: 12px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+.styledInput {
+  flex: 1;
+  height: 56px;
+  border-radius: 28px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  font-size: 16px;
+  padding: 0 24px;
+
+  &:focus {
+    border-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+  }
+
+  &::placeholder {
+    color: #999999;
+  }
+}
+
+.subscribeButton {
+  height: 56px;
+  padding: 0 32px;
+  border-radius: 28px;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  color: #70c1c1;
+  font-weight: 600;
+  font-size: 16px;
+  backdrop-filter: blur(10px);
+  min-width: 140px;
+
+  &:hover {
+    background: white;
+    color: #5ab3b3;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}
+
+.iconContainer {
+  font-size: 64px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 24px;
+}

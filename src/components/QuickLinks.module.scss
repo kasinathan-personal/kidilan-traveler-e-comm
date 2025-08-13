@@ -1,0 +1,48 @@
+.quickLinksContainer {
+  padding: 0 24px;
+  margin-bottom: 40px;
+}
+
+.styledCard {
+  border-radius: 16px;
+  border: 1px solid rgba(240, 242, 244, 0.8);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-align: center;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+    border-color: #70c1c1;
+  }
+
+  .ant-card-body {
+    padding: 24px 16px;
+  }
+}
+
+.iconContainer {
+  font-size: 32px;
+  color: #70c1c1;
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+
+  .styledCard:hover & {
+    color: #5ab3b3;
+    transform: scale(1.1);
+  }
+}
+
+.linkTitle {
+  font-weight: 600;
+  font-size: 16px;
+  color: #333333;
+  margin-bottom: 4px;
+}
+
+.linkSubtitle {
+  font-size: 12px;
+  color: #666666;
+}

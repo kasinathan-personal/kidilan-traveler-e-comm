@@ -1,0 +1,100 @@
+// Import variables from main SCSS file
+@import '../../index.scss';
+
+.header {
+  background: rgba($white, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba($surface-color, 0.8);
+  padding: 0 $spacing-lg;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: $shadow-sm;
+}
+
+.logo {
+  font-family: $font-display;
+  font-size: 28px;
+  font-weight: 700;
+  color: $primary-color;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  
+  &::before {
+    content: '🎒';
+    margin-right: $spacing-sm;
+    font-size: 24px;
+  }
+}
+
+.menu {
+  border: none;
+  background: transparent;
+  font-weight: 500;
+  
+  :global(.ant-menu-item) {
+    border-radius: $border-radius-sm;
+    margin: 0 $spacing-xs;
+    
+    &:hover {
+      background: rgba($primary-color, 0.1);
+      color: $primary-color;
+    }
+  }
+}
+
+.searchContainer {
+  max-width: 400px;
+  width: 100%;
+}
+
+.search {
+  :global(.ant-input) {
+    border-radius: $border-radius-xxl;
+    border: 1px solid rgba($surface-color, 0.8);
+    background: rgba($white, 0.9);
+    backdrop-filter: blur(5px);
+    
+    &:focus {
+      border-color: $primary-color;
+      box-shadow: 0 0 0 2px rgba($primary-color, 0.2);
+    }
+  }
+  
+  :global(.ant-input-group-addon) {
+    border-radius: 0 $border-radius-xxl $border-radius-xxl 0;
+    border: 1px solid rgba($surface-color, 0.8);
+    background: $primary-color;
+    
+    :global(.ant-btn) {
+      border: none;
+      background: transparent;
+      color: $white;
+    }
+  }
+}
+
+.iconContainer {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.iconButton {
+  cursor: pointer;
+  padding: $spacing-sm;
+  border-radius: $border-radius-sm;
+  transition: all $transition-normal;
+  color: $text-secondary;
+  
+  &:hover {
+    background: rgba($primary-color, 0.1);
+    color: $primary-color;
+    transform: translateY(-1px);
+  }
+  
+  :global(.anticon) {
+    font-size: 20px;
+  }
+}

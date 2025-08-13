@@ -1,0 +1,51 @@
+/* Brand Design System (Luxury Travel) */
+
+/* Google Fonts are imported in index.scss */
+
+/* SCSS Tokens */
+$color-midnight: #0b1d2a; /* deep midnight blue */
+$color-sand: #d9c6aa; /* sand beige */
+$color-gold: #bfa27a; /* muted gold */
+$color-rust: #b35c2e; /* rustic orange */
+$color-slate: #27323d; /* deep slate */
+$color-surface: #0f2434; /* darker surface */
+$color-bg: #0a1824; /* page bg */
+$color-text: #e9edf1; /* high-contrast on dark */
+$color-text-dim: #b7c0c9;
+
+$radius-xl: 20px;
+$radius-2xl: 24px;
+$shadow-luxury: 0 10px 30px rgba(0, 0, 0, 0.25);
+
+/* CSS Variables for Tailwind consumption */
+:root {
+  --color-midnight: 11 29 42;
+  --color-sand: 217 198 170;
+  --color-gold: 191 162 122;
+  --color-rust: 179 92 46;
+  --color-slate: 39 50 61;
+
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+
+  --shadow-luxury: 0 10px 30px rgba(0,0,0,0.25);
+}
+
+/* Elevation helpers */
+.elevation-luxury {
+  box-shadow: var(--shadow-luxury);
+}
+
+/* Glassmorphism */
+.glass {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Parallax container helper */
+.parallax {
+  will-change: transform;
+  transform: translateZ(0);
+} 
