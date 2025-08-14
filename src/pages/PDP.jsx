@@ -12,8 +12,12 @@ import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FavoriteIcon from "@mui/icons-material/Favorite";
-import { getProductById, getRelatedProducts } from "@/data/products";
+import { apiService } from "@/services/api";
+import { useApi, useAsyncApi } from "@/hooks/useApi";
 import ImageWithFallback from "@/components/ImageWithFallback";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import ErrorMessage from "@/components/ErrorMessage";
+import NotFound from "./NotFound";
 
 const PDP = () => {
   const { id } = useParams();
@@ -24,11 +28,16 @@ const PDP = () => {
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [imageErrorMap, setImageErrorMap] = React.useState({});
 
-  const product = React.useMemo(
-    () => getProductById(id) || getProductById(1),
-    [id]
+  // Fetch product and reviews
+  const { data: product, loading: productLoading, error: productError, retry: retryProduct } = useApi(() => apiService.getProduct(id), [id]);
+  const { data: reviews, loading: reviewsLoading, error: reviewsError } = useApi(() => apiService.getProductReviews(id), [id]);
+  const { data: relatedProducts } = useApi(() => 
+    product ? apiService.getProducts({ categoryId: product.categoryId, limit: 8 }) : Promise.resolve({ products: [] }), 
+    [product?.categoryId]
   );
-  const isWishlisted = wishlist.includes(product.id);
+
+  const isWishlisted = product && wishlist.includes(product._id);
+  const related = relatedProducts?.products?.filter(p => p._id !== product?._id) || [];
 
   React.useEffect(() => {
     setActiveImage(0);
@@ -36,14 +45,32 @@ const PDP = () => {
     setImageErrorMap({});
   }, [id]);
 
-  const related = React.useMemo(
-    () => getRelatedProducts(product, 100).slice(0, 8),
-    [product]
-  );
+  // Show loading state
+  if (productLoading) {
+    return <LoadingSpinner fullScreen message="Loading product..." />;
+  }
+
+  // Show error state
+  if (productError) {
+    if (productError.status === 404) {
+      return <NotFound />;
+    }
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
+        <div className="max-w-md mx-auto">
+          <ErrorMessage error={productError} onRetry={retryProduct} />
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return <NotFound />;
+  }
 
   const toggleWishlist = () => {
-    if (isWishlisted) dispatch(removeFromWishlist(product.id));
-    else dispatch(addToWishlist(product.id));
+    if (isWishlisted) dispatch(removeFromWishlist(product._id));
+    else dispatch(addToWishlist(product._id));
   };
 
   const handleMainImageClick = () => {
@@ -150,7 +177,7 @@ const PDP = () => {
                 onClick={() =>
                   dispatch(
                     addToCart({
-                      id: product.id,
+                      id: product._id,
                       name: product.name,
                       price: product.price,
                       image: product.images?.[0],
@@ -207,8 +234,8 @@ const PDP = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 justify-items-center">
             {related.map((p) => (
               <Link
-                to={`/product/${p.id}`}
-                key={p.id}
+                to={`/product/${p._id}`}
+                key={p._id}
                 className="bg-white rounded-xl sm:rounded-2xl p-2 sm:p-3 shadow hover:-translate-y-1 transition text-center w-full max-w-48"
               >
                 <div className="relative aspect-[4/3] overflow-hidden rounded-lg sm:rounded-xl">
@@ -224,7 +251,7 @@ const PDP = () => {
                       {p.name}
                     </div>
                     <div className="text-slate-900 font-semibold text-sm sm:text-base">
-                      ₹{p.price}
+                      ${p.price}
                     </div>
                   </div>
                 )}

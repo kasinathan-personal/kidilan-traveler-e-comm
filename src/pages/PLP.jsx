@@ -8,9 +8,12 @@ import Rating from "@mui/material/Rating";
 import Pagination from "@mui/material/Pagination";
 import IconButton from "@mui/material/IconButton";
 import Badge from "@mui/material/Badge";
-import { Link } from "react-router-dom";
-import { products as allProducts } from "@/data/products";
+import { Link, useSearchParams } from "react-router-dom";
+import { apiService } from "@/services/api";
+import { useApi } from "@/hooks/useApi";
 import ImageWithFallback from "@/components/ImageWithFallback";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import ErrorMessage from "@/components/ErrorMessage";
 
 // Filter and Close icons (you can replace with actual icons from your icon library)
 const FilterIcon = () => (
@@ -101,42 +104,95 @@ const ProductCard = ({ product }) => {
 };
 
 const PLP = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const categoryIdFromUrl = searchParams.get('categoryId');
+  const queryFromUrl = searchParams.get('q') || '';
+
   const [query, setQuery] = React.useState("");
-  const maxPrice = Math.max(...allProducts.map((p) => p.price));
-  const [price, setPrice] = React.useState([0, maxPrice]);
+  const [price, setPrice] = React.useState([0, 10000]);
   const [minRating, setMinRating] = React.useState(0);
-  const [selectedCategories, setSelectedCategories] = React.useState(
-    new Set(allProducts.map((p) => p.category))
-  );
+  const [selectedCategories, setSelectedCategories] = React.useState(new Set());
   const [page, setPage] = React.useState(1);
   const [showFilters, setShowFilters] = React.useState(false);
   const pageSize = 12;
 
+  // Fetch categories and products
+  const { data: categories, loading: categoriesLoading, error: categoriesError } = useApi(() => apiService.getCategories());
+  const { 
+    data: productsData, 
+    loading: productsLoading, 
+    error: productsError, 
+    retry: retryProducts 
+  } = useApi(() => apiService.getProducts({
+    q: query || queryFromUrl,
+    categoryId: categoryIdFromUrl,
+    page,
+    limit: pageSize
+  }), [query, queryFromUrl, categoryIdFromUrl, page]);
+
+  const allProducts = productsData?.products || [];
+  const totalProducts = productsData?.total || 0;
+  const maxPrice = Math.max(...allProducts.map((p) => p.price), 10000);
+
+  // Initialize selected categories
+  React.useEffect(() => {
+    if (categories && categories.length > 0) {
+      const categoryIds = new Set(categories.map(c => c._id));
+      if (categoryIdFromUrl) {
+        setSelectedCategories(new Set([categoryIdFromUrl]));
+      } else {
+        setSelectedCategories(categoryIds);
+      }
+    }
+  }, [categories, categoryIdFromUrl]);
+
+  // Update price range when products load
+  React.useEffect(() => {
+    if (allProducts.length > 0) {
+      const max = Math.max(...allProducts.map((p) => p.price));
+      setPrice([0, max]);
+    }
+  }, [allProducts]);
+
+  // Client-side filtering for additional filters
   const filtered = allProducts.filter(
     (p) =>
-      p.name.toLowerCase().includes(query.toLowerCase()) &&
       p.price >= price[0] &&
       p.price <= price[1] &&
-      p.rating >= minRating &&
-      selectedCategories.has(p.category)
+      (p.rating || 0) >= minRating &&
+      (selectedCategories.size === 0 || selectedCategories.has(p.categoryId))
   );
 
-  React.useEffect(() => {
-    setPage(1);
-  }, [query, price, minRating, selectedCategories]);
-
-  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const pageCount = Math.max(1, Math.ceil(totalProducts / pageSize));
 
   // Count active filters
   const activeFiltersCount = React.useMemo(() => {
     let count = 0;
-    if (query) count++;
+    if (query || queryFromUrl) count++;
     if (price[0] > 0 || price[1] < maxPrice) count++;
     if (minRating > 0) count++;
-    if (selectedCategories.size < allProducts.length) count++;
+    if (categoryIdFromUrl || (categories && selectedCategories.size < categories.length)) count++;
     return count;
-  }, [query, price, minRating, selectedCategories, maxPrice]);
+  }, [query, queryFromUrl, price, minRating, selectedCategories, categories, categoryIdFromUrl, maxPrice]);
+
+  // Show loading state
+  if (categoriesLoading || productsLoading) {
+    return <LoadingSpinner fullScreen message="Loading products..." />;
+  }
+
+  // Show error state
+  if (categoriesError || productsError) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
+        <div className="max-w-md mx-auto">
+          <ErrorMessage 
+            error={categoriesError || productsError} 
+            onRetry={retryProducts}
+          />
+        </div>
+      </div>
+    );
+  }
 
   // Close filters when clicking outside on mobile
   React.useEffect(() => {
@@ -192,24 +248,24 @@ const PLP = () => {
 
       <div className="mb-6">
         <div className="text-slate-600 mb-2">Category</div>
-        {[...new Set(allProducts.map((p) => p.category))].map((c) => (
+        {(categories || []).map((c) => (
           <FormControlLabel
-            key={c}
+            key={c._id}
             control={
               <Checkbox
-                checked={selectedCategories.has(c)}
+                checked={selectedCategories.has(c._id)}
                 onChange={(e) => {
                   const newCategories = new Set(selectedCategories);
                   if (e.target.checked) {
-                    newCategories.add(c);
+                    newCategories.add(c._id);
                   } else {
-                    newCategories.delete(c);
+                    newCategories.delete(c._id);
                   }
                   setSelectedCategories(newCategories);
                 }}
               />
             }
-            label={c}
+            label={c.name}
           />
         ))}
       </div>
@@ -289,7 +345,7 @@ const PLP = () => {
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
                 <AnimatePresence>
-                  {paged.map((p) => (
+                  {filtered.map((p) => (
                     <ProductCard key={p.id} product={p} />
                   ))}
                 </AnimatePresence>

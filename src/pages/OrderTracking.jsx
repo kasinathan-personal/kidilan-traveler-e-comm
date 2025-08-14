@@ -15,7 +15,9 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import HeadsetMicIcon from '@mui/icons-material/HeadsetMic';
 import ImageWithFallback from '@/components/ImageWithFallback';
-import { products as allProducts } from '@/data/products';
+import { apiService } from '@/services/api';
+import { useAsyncApi } from '@/hooks/useApi';
+import ErrorMessage from '@/components/ErrorMessage';
 
 const steps = [
   { label: 'Order Placed', date: '20 Feb 2024', time: '11:00 AM', Icon: ShoppingCartCheckoutIcon },
@@ -59,15 +61,28 @@ const OrderTracking = () => {
   const [activeStep, setActiveStep] = React.useState(0);
   const [trackingInput, setTrackingInput] = React.useState('');
   const [status, setStatus] = React.useState('idle'); // idle | loading | shown
+  const [trackingData, setTrackingData] = React.useState(null);
+
+  const { loading: trackingLoading, error: trackingError, execute: trackShipment } = useAsyncApi(apiService.trackShipment);
+
   const isShown = status === 'shown';
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!trackingInput.trim()) { return; }
     setStatus('loading');
-    setTimeout(() => {
-      setStatus('shown');
-    }, 800);
+    
+    // Try to track the shipment
+    trackShipment(trackingInput.trim())
+      .then((data) => {
+        setTrackingData(data);
+        setStatus('shown');
+      })
+      .catch((error) => {
+        console.error('Tracking failed:', error);
+        // Still show the demo data for now
+        setStatus('shown');
+      });
   };
 
   React.useEffect(() => {
@@ -94,6 +109,10 @@ const OrderTracking = () => {
       <div className="container py-8 max-w-7xl mx-auto space-y-6">
         {/* Order status & search */}
         <motion.div layout className="bg-white rounded-2xl p-6 shadow w-full">
+          {trackingError && (
+            <ErrorMessage error={trackingError} className="mb-4" />
+          )}
+          
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
             <div>
               <div className="font-medium">Order Status</div>
@@ -108,16 +127,16 @@ const OrderTracking = () => {
                 value={trackingInput}
                 onChange={(e)=>setTrackingInput(e.target.value)}
                 className="w-full"
-              />
+                disabled={status==='loading' || trackingLoading}
               <Button variant="contained" size="medium" type="submit" disabled={status==='loading'}>
-                {status==='loading' ? 'Checking…' : 'Track'}
+                {(status==='loading' || trackingLoading) ? 'Checking…' : 'Track'}
               </Button>
             </form>
           </div>
 
           {/* Loading indicator */}
           <AnimatePresence initial={false}>
-            {status==='loading' && (
+            {(status==='loading' || trackingLoading) && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-center py-10">
                 <CircularProgress size={28} className="mr-3" />
                 <span className="text-slate-600">Fetching tracking details…</span>
@@ -156,17 +175,21 @@ const OrderTracking = () => {
             <motion.div variants={containerVariants} initial="hidden" animate="show" exit={{ opacity: 0 }} className="bg-white rounded-2xl p-6 shadow w-full">
               <motion.div variants={itemVariants} className="font-medium mb-4">Products</motion.div>
               <div className="divide-y divide-slate-100">
-                {orderItems.map((item, idx) => (
+               {(trackingData?.orderItems || orderItems).map((item, idx) => (
                   <motion.div
                     variants={itemVariants}
                     key={idx}
                     className="py-4 flex flex-col sm:flex-row items-start sm:items-center gap-4"
                   >
                     <div className="w-full sm:w-16 h-16 rounded-xl overflow-hidden bg-slate-100 shrink-0">
-                      <ImageWithFallback src={item.product.images?.[0]} alt={item.product.name} className="w-full h-full object-cover" />
+                     <ImageWithFallback 
+                       src={item.product?.images?.[0] || item.image} 
+                       alt={item.product?.name || item.name} 
+                       className="w-full h-full object-cover" 
+                     />
                     </div>
                     <div className="flex-1">
-                      <div className="font-medium text-slate-800">{item.product.name}</div>
+                     <div className="font-medium text-slate-800">{item.product?.name || item.name}</div>
                       <div className="text-slate-500 text-sm">{item.meta} | {item.qty} Qty.</div>
                     </div>
                   </motion.div>

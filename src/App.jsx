@@ -1,11 +1,12 @@
 import React from "react";
 import { Provider } from "react-redux";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, createBrowserRouter, RouterProvider } from "react-router-dom";
 import { CssBaseline } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "./theme/mui-theme";
 import store from "./store";
 
+import ErrorBoundary from "./components/ErrorBoundary";
 import NavBar from "./components/NavBar";
 import CartDrawer from "./components/CartDrawer";
 import SiteFooter from "./components/SiteFooter";
@@ -19,13 +20,15 @@ import OrderSuccess from "./pages/OrderSuccess";
 import OrderTracking from "./pages/OrderTracking";
 import Wishlist from "./pages/Wishlist";
 import KidilanTraveller from "./pages/KidilanTraveller";
+import ErrorPage from "./pages/ErrorPage";
+import NotFound from "./pages/NotFound";
 
 const RoutedLayout = () => {
   const location = useLocation();
   const isPdp =
     /^\/product\//.test(location.pathname) || location.pathname === "/wishlist";
   return (
-    <>
+    <ErrorBoundary>
       <NavBar />
       <Routes>
         <Route path="/" element={<Landing />} />
@@ -36,11 +39,12 @@ const RoutedLayout = () => {
         <Route path="/order/success" element={<OrderSuccess />} />
         <Route path="/order/tracking" element={<OrderTracking />} />
         <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="*" element={<NotFound />} />
         {/* <Route path="/stories" element={<KidilanTraveller />} /> */}
       </Routes>
       <SiteFooter />
       <CartDrawer />
-    </>
+    </ErrorBoundary>
   );
 };
 

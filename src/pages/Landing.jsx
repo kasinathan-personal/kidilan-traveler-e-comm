@@ -7,8 +7,11 @@ import Tab from "@mui/material/Tab";
 import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addToCart } from "@/store/slices/cartSlice";
-import { products as allProducts } from "@/data/products";
+import { apiService } from "@/services/api";
+import { useApi } from "@/hooks/useApi";
 import ImageWithFallback from "@/components/ImageWithFallback";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import ErrorMessage from "@/components/ErrorMessage";
 
 const categories = [
   {
@@ -64,12 +67,6 @@ const heroSlides = [
   },
 ];
 
-const selectFeatured = allProducts.slice(0, 10);
-const topSelling = allProducts
-  .filter((p) => ["Backpacks", "Headphones", "Bags"].includes(p.category))
-  .slice(0, 8);
-const featuredList = allProducts.slice(10, 14);
-
 const useCountdown = (hoursAhead = 48) => {
   const target = React.useRef(Date.now() + hoursAhead * 3600 * 1000);
   const [remainingMs, setRemainingMs] = React.useState(
@@ -93,6 +90,13 @@ const useCountdown = (hoursAhead = 48) => {
 const Landing = () => {
   const dispatch = useDispatch();
 
+  // Fetch categories and products from API
+  const { data: categories, loading: categoriesLoading, error: categoriesError, retry: retryCategories } = useApi(() => apiService.getCategories());
+  const { data: productsData, loading: productsLoading, error: productsError, retry: retryProducts } = useApi(() => apiService.getProducts({ limit: 20 }));
+
+  const allProducts = productsData?.products || [];
+  const apiCategories = categories || [];
+
   // Rotate hero product cards by reordering indices
   const [cardOrder, setCardOrder] = React.useState([0, 1, 2, 3]);
   React.useEffect(() => {
@@ -106,6 +110,34 @@ const Landing = () => {
 
   const [activeTab, setActiveTab] = React.useState(0);
   const { days, hours, minutes, seconds } = useCountdown(36);
+
+  const selectFeatured = allProducts.slice(0, 10);
+  const topSelling = allProducts
+    .filter((p) => ["Backpacks", "Headphones", "Bags"].includes(p.category))
+    .slice(0, 8);
+  const featuredList = allProducts.slice(10, 14);
+
+  // Show loading state
+  if (categoriesLoading || productsLoading) {
+    return <LoadingSpinner fullScreen message="Loading products..." />;
+  }
+
+  // Show error state
+  if (categoriesError || productsError) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
+        <div className="max-w-md mx-auto">
+          <ErrorMessage 
+            error={categoriesError || productsError} 
+            onRetry={() => {
+              if (categoriesError) retryCategories();
+              if (productsError) retryProducts();
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white min-h-screen text-slate-900">
@@ -205,10 +237,10 @@ const Landing = () => {
                         onClick={() =>
                           dispatch(
                             addToCart({
-                              id: `hero-card-${idx}`,
+                              id: item._id || `hero-card-${idx}`,
                               name: item.name,
                               price: item.price,
-                              image: item.image,
+                              image: item.images?.[0] || item.image,
                             })
                           )
                         }
@@ -229,20 +261,20 @@ const Landing = () => {
       <section className="container max-w-7xl mx-auto py-8 text-center">
         <h2 className="font-display text-3xl mb-6">Explore Categories</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 justify-items-center">
-          {categories.map((cat) => (
+          {(apiCategories.length > 0 ? apiCategories.slice(0, 4) : categories).map((cat) => (
             <Link
-              to={`/shop?category=${cat.key}`}
-              key={cat.key}
+              to={`/shop?categoryId=${cat._id || cat.key}`}
+              key={cat._id || cat.key}
               className="group relative overflow-hidden rounded-2xl shadow block w-full"
             >
               <ImageWithFallback
-                src={cat.image}
-                alt={cat.title}
+                src={cat.image || cat.image}
+                alt={cat.name || cat.title}
                 className="w-full h-40 md:h-56 object-cover group-hover:scale-105 transition duration-500"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 font-semibold text-white drop-shadow">
-                {cat.title}
+                {cat.name || cat.title}
               </div>
             </Link>
           ))}
@@ -260,13 +292,13 @@ const Landing = () => {
           <div className="flex gap-6 min-w-max justify-center">
             {selectFeatured.map((p) => (
               <Link
-                to={`/product/${p.id}`}
-                key={p.id}
+                to={`/product/${p._id || p.id}`}
+                key={p._id || p.id}
                 className="w-64 shrink-0 bg-white rounded-2xl p-3 transition shadow hover:-translate-y-1 text-center"
               >
                 <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
                   <ImageWithFallback
-                    src={p.images?.[0]}
+                    src={p.images?.[0] || p.image}
                     alt={p.name}
                     className="w-full h-full object-cover hover:scale-105 transition duration-500"
                   />
@@ -333,13 +365,13 @@ const Landing = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 justify-items-center">
           {topSelling.map((p) => (
             <Link
-              to={`/product/${p.id}`}
-              key={p.id}
+              to={`/product/${p._id || p.id}`}
+              key={p._id || p.id}
               className="bg-white rounded-2xl p-3 shadow hover:-translate-y-1 transition text-center w-full"
             >
               <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
                 <ImageWithFallback
-                  src={p.images?.[0]}
+                  src={p.images?.[0] || p.image}
                   alt={p.name}
                   className="w-full h-full object-cover hover:scale-105 transition duration-500"
                 />
@@ -387,12 +419,12 @@ const Landing = () => {
           <div className="bg-white rounded-2xl p-6 shadow flex flex-col text-left">
             <div className="flex gap-4 items-center">
               <ImageWithFallback
-                src={allProducts[4].images?.[0]}
+                src={allProducts[4]?.images?.[0] || allProducts[4]?.image}
                 alt="Feature"
                 className="w-36 h-36 rounded-xl object-cover"
               />
               <div className="flex-1">
-                <div className="font-medium">{allProducts[4].name}</div>
+                <div className="font-medium">{allProducts[4]?.name}</div>
                 <ul className="mt-2 text-slate-600 text-sm list-disc pl-4">
                   <li>Dynamic sound</li>
                   <li>All-day battery</li>
@@ -400,12 +432,12 @@ const Landing = () => {
                 </ul>
                 <div className="mt-3 flex items-center justify-between">
                   <div className="text-slate-900 font-semibold">
-                    ${allProducts[4].price}
+                    ${allProducts[4]?.price || 0}
                   </div>
                   <Button
                     variant="contained"
-                    component={Link}
-                    to={`/product/${allProducts[4].id}`}
+                    component={allProducts[4] ? Link : 'button'}
+                    to={allProducts[4] ? `/product/${allProducts[4]._id || allProducts[4].id}` : undefined}
                   >
                     View
                   </Button>
@@ -415,13 +447,13 @@ const Landing = () => {
           </div>
           {featuredList.map((p) => (
             <Link
-              to={`/product/${p.id}`}
-              key={p.id}
+              to={`/product/${p._id || p.id}`}
+              key={p._id || p.id}
               className="bg-white rounded-2xl p-6 shadow hover:-translate-y-1 transition block"
             >
               <div className="flex items-center gap-4">
                 <ImageWithFallback
-                  src={p.images?.[0]}
+                  src={p.images?.[0] || p.image}
                   alt={p.name}
                   className="w-20 h-20 rounded-xl object-cover"
                 />
