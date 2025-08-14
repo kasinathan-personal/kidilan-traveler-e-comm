@@ -15,7 +15,7 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import HeadsetMicIcon from '@mui/icons-material/HeadsetMic';
 import ImageWithFallback from '@/components/ImageWithFallback';
-import { getProductById } from '@/api/products';
+import { getProductById } from '@/service/api';
 
 const steps = [
   { label: 'Order Placed', date: '20 Feb 2024', time: '11:00 AM', Icon: ShoppingCartCheckoutIcon },
