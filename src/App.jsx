@@ -36,7 +36,7 @@ const RoutedLayout = () => {
         <Route path="/order/success" element={<OrderSuccess />} />
         <Route path="/order/tracking" element={<OrderTracking />} />
         <Route path="/wishlist" element={<Wishlist />} />
-        <Route path="/stories" element={<KidilanTraveller />} />
+        {/* <Route path="/stories" element={<KidilanTraveller />} /> */}
       </Routes>
       <SiteFooter />
       <CartDrawer />

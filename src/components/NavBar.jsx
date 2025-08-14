@@ -48,7 +48,7 @@ const NavBar = () => {
   const navigationItems = [
     { label: "Home", path: "/", icon: <HomeIcon /> },
     { label: "Shop", path: "/shop", icon: <StorefrontIcon /> },
-    { label: "Stories", path: "/stories", icon: <BookIcon /> },
+    // { label: "Stories", path: "/stories", icon: <BookIcon /> },
     {
       label: "Track Order",
       path: "/order/tracking",
